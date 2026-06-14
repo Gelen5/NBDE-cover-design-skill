@@ -118,7 +118,41 @@
 
 ---
 
-## 🚀 安装
+## ⚡ 零依赖也能用！
+
+**这个 Skill 的核心是 SKILL.md 工作流 + HTML 模板 + 版式配方，全是文本文件，AI 读了就能干活。脚本只是"加速器"，不是"必须品"。**
+
+| 功能 | 不装任何东西 | 装了 Playwright | 全装（Playwright + API Key + MediaPipe） |
+|------|------------|----------------|----------------------------------------|
+| 封面 HTML 生成 + 预览 | ✅ preview_url 预览 | ✅ 同左 | ✅ 同左 |
+| 自定义颜色 / 比例 / 主题 | ✅ 改 CSS 变量 | ✅ 同左 | ✅ 同左 |
+| 版式切换 | ✅ 换版式函数 | ✅ 同左 | ✅ 同左 |
+| AI 生图 | ✅ 用 AI 平台自带生图能力 | ✅ 同左 | ✅ 脚本化批量生图 |
+| 人脸检测 | ✅ AI 自己看图判断人脸位置 | ✅ 同左 | ✅ 精确坐标（6 关键点） |
+| **高清 PNG 输出** | ❌ 只能预览 HTML | ✅ Playwright 截图 | ✅ 同左 |
+
+### 最快体验方式（3 秒上手）
+
+```bash
+# 什么都不装，直接克隆
+git clone https://github.com/Gelen5/NBDE-cover-design-skill.git
+
+# 然后在任何 AI 编程工具里说：
+"读取 NBDE-cover-design-skill/SKILL.md，帮我做个公众号封面，主题是 AI 工具推荐"
+# 搞定！AI 会生成 HTML，你直接预览看效果。
+```
+
+### 推荐最小安装（1 条命令，解锁 PNG 输出）
+
+```bash
+npm install playwright && npx playwright install chromium
+```
+
+装完这一条，AI 就能帮你直接截图输出高清 PNG，不用手动在浏览器里截图了。
+
+---
+
+## 🚀 完整安装
 
 ### 方式一：直接克隆
 
@@ -135,10 +169,10 @@ npm install
 git clone https://github.com/Gelen5/NBDE-cover-design-skill.git ~/.workbuddy/skills/nbde-cover-design-skill
 ```
 
-### 依赖安装
+### 可选依赖（按需安装）
 
 ```bash
-# 必需：Playwright 渲染引擎
+# 推荐：Playwright 渲染引擎（解锁高清 PNG 输出）
 npm install playwright
 npx playwright install chromium
 
