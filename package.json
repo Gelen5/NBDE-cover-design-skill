@@ -1,0 +1,18 @@
+{
+  "name": "nbde-cover-design-skill",
+  "version": "0.1.0",
+  "description": "Multi-platform cover image generator with AI image generation, portrait covers, custom colors and ratios",
+  "type": "module",
+  "scripts": {
+    "render": "node scripts/render.mjs",
+    "face-detect": "node scripts/face-detect.mjs",
+    "image-gen": "node scripts/image-gen.mjs",
+    "color-utils": "node scripts/color-utils.mjs"
+  },
+  "dependencies": {},
+  "optionalDependencies": {
+    "playwright": "^1.40.0",
+    "@mediapipe/tasks-vision": "^0.10.0"
+  },
+  "license": "MIT"
+}

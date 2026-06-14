@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBDE Portrait Cover — Seed Template (P01–P06)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@100;200;300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS VARIABLES — Canvas / Face Detection / Overlay
+   ============================================================ */
+:root {
+  /* Canvas dimensions (overridden by .poster.* classes) */
+  --canvas-w: 1080px;
+  --canvas-h: 1440px;
+
+  /* ── MediaPipe Face Detection Data ──
+     Injected via JS at render time from MediaPipe face landmarker results.
+     All values are fractions 0..1 relative to the portrait image dimensions. */
+  --face-x: 0.50;       /* Face center X (0=left edge, 1=right edge)  */
+  --face-y: 0.40;       /* Face center Y (0=top edge, 1=bottom edge)  */
+  --face-w: 0.25;       /* Face bounding-box width fraction            */
+  --face-h: 0.35;       /* Face bounding-box height fraction           */
+
+  /* Overlay strength for P03 Background Portrait (range 0.4–0.7) */
+  --overlay-opacity: 0.55;
+
+  /* ── Derived safe-region boundaries (computed fractions) ── */
+  --face-left:   calc(var(--face-x) - var(--face-w) * 0.55);
+  --face-right:  calc(var(--face-x) + var(--face-w) * 0.55);
+  --face-top:    calc(var(--face-y) - var(--face-h) * 0.55);
+  --face-bottom: calc(var(--face-y) + var(--face-h) * 0.55);
+
+  /* P06 accent portrait size */
+  --accent-portrait-size: 140px;
+}
+
+/* ============================================================
+   THEME SYSTEM
+   ============================================================ */
+:root,
+[data-theme="dark"] {
+  --paper:     #0a0a0a;
+  --paper-2:   #1a1a1a;
+  --ink:       #f5f5f5;
+  --muted:     #999999;
+  --accent:    #002FA7;
+  --accent-on: #ffffff;
+  --glow:      rgba(255, 255, 255, 0.06);
+  --border:    rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] {
+  --paper:     #fafaf8;
+  --paper-2:   #f0f0ee;
+  --ink:       #0a0a0a;
+  --muted:     #737373;
+  --accent:    #002FA7;
+  --accent-on: #ffffff;
+  --glow:      rgba(0, 0, 0, 0.04);
+  --border:    rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="custom"] {
+  --paper:     var(--user-paper,     #0a0a0a);
+  --paper-2:   var(--user-paper-2,   #1a1a1a);
+  --ink:       var(--user-ink,       #f5f5f5);
+  --muted:     var(--user-muted,     #999999);
+  --accent:    var(--user-accent,    #002FA7);
+  --accent-on: var(--user-accent-on, #ffffff);
+  --glow:      var(--user-glow,      rgba(255,255,255,0.06));
+  --border:    var(--user-border,    rgba(255,255,255,0.08));
+}
+
+/* ============================================================
+   BASE & RESET
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; min-height: 100vh;
+  background: #111;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Inter', 'Noto Sans SC', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Canvas ── */
+.canvas {
+  position: relative;
+  width:  var(--canvas-w);
+  height: var(--canvas-h);
+  background: var(--paper);
+  color: var(--ink);
+  overflow: hidden;
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* ── Portrait Image Layer ── */
+.portrait-section {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--paper-2);
+  flex-shrink: 0;
+}
+
+/* ── Text Content Layer ── */
+.text-section {
+  position: relative;
+  z-index: 2;
+  display: flex; flex-direction: column;
+  padding: 80px 72px;
+  overflow: hidden;
+}
+.text-section .h-hero,
+.text-section .h-xl,
+.text-section .h-md,
+.text-section .lead,
+.text-section .meta { max-width: 100%; }
+
+.text-section .spacer { flex: 1; min-height: 0; }
+
+/* ── Portrait Collage Grid ── */
+.portrait-collage {
+  display: grid;
+  gap: 4px;
+  width: 100%; height: 100%;
+}
+.portrait-tile {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: var(--paper-2);
+}
+
+/* ── P03 Background Overlay Mask ── */
+.overlay-mask {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none;
+}
+
+/* ============================================================
+   POSTER SIZE PRESETS
+   ============================================================ */
+.poster.xhs {
+  --canvas-w: 1080px;
+  --canvas-h: 1440px;
+}
+.poster.square {
+  --canvas-w: 1080px;
+  --canvas-h: 1080px;
+}
+.poster.wide {
+  --canvas-w: 2100px;
+  --canvas-h: 900px;
+}
+.poster.custom {
+  /* --canvas-w and --canvas-h set via inline style on .canvas */
+}
+
+/* Wide-mode text adjustments */
+[data-layout="P01"].poster.wide .text-section,
+[data-layout="P02"].poster.wide .text-section { padding: 60px 80px; }
+[data-layout="P04"].poster.wide .portrait-section { height: 45%; }
+[data-layout="P04"].poster.wide .text-section { height: 55%; padding: 60px 80px; }
+
+/* Square-mode text adjustments */
+.poster.square .text-section { padding: 64px 64px; }
+.poster.square .h-hero { font-size: clamp(100px, 12vw, 160px); }
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+.h-hero {
+  font-family: 'Inter', sans-serif;
+  font-weight: 200;
+  font-size: clamp(120px, 14vw, 200px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.h-xl {
+  font-family: 'Inter', sans-serif;
+  font-weight: 300;
+  font-size: clamp(88px, 10vw, 120px);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+}
+.h-md {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: clamp(48px, 5.5vw, 56px);
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.lead {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 400;
+  font-size: clamp(28px, 3.2vw, 34px);
+  line-height: 1.5;
+  color: var(--muted);
+  max-width: 34ch;
+}
+.meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 400;
+  font-size: clamp(16px, 1.8vw, 20px);
+  line-height: 1.4;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Accent Tag (pill badge) ── */
+.accent-tag {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--accent);
+  color: var(--accent-on);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  border-radius: 4px;
+  margin-bottom: 32px;
+}
+
+/* ── Accent Bar (horizontal rule) ── */
+.accent-bar {
+  width: 64px; height: 4px;
+  background: var(--accent);
+  margin: 28px 0;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   P01 — LEFT PORTRAIT (人像在左 · 文字在右)
+   ============================================================ */
+[data-layout="P01"] .canvas {
+  flex-direction: row;
+}
+[data-layout="P01"] .portrait-section {
+  position: relative;
+  width: 40%;
+  height: 100%;
+}
+[data-layout="P01"] .text-section {
+  width: 60%;
+  justify-content: center;
+}
+
+/* ============================================================
+   P02 — RIGHT PORTRAIT (人像在右 · 文字在左)
+   ============================================================ */
+[data-layout="P02"] .canvas {
+  flex-direction: row-reverse;
+}
+[data-layout="P02"] .portrait-section {
+  position: relative;
+  width: 40%;
+  height: 100%;
+}
+[data-layout="P02"] .text-section {
+  width: 60%;
+  justify-content: center;
+}
+
+/* ============================================================
+   P03 — BACKGROUND PORTRAIT (满幅人像 + 渐变遮罩)
+
+   Face-aware positioning:
+   JS reads --face-x from MediaPipe. If face-x < 0.5, sets
+   data-face-side="left" → text goes RIGHT.  Otherwise sets
+   data-face-side="right" → text goes LEFT.
+
+   If data-face-side is absent, text defaults to the right side
+   with a symmetrical overlay.
+   ============================================================ */
+[data-layout="P03"] .canvas {
+  flex-direction: row;
+}
+[data-layout="P03"] .portrait-section {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+
+/* Default: text on right side */
+[data-layout="P03"] .text-section {
+  position: absolute;
+  top: 0; bottom: 0;
+  right: 0;
+  width: 55%;
+  z-index: 3;
+  padding: 80px 72px;
+  justify-content: center;
+  text-shadow:
+    0 2px 16px rgba(0,0,0,0.65),
+    0 4px 32px rgba(0,0,0,0.45),
+    0 1px 2px rgba(0,0,0,0.4);
+  background:
+    linear-gradient(to left, transparent 0%, rgba(0,0,0,0.06) 35%, rgba(0,0,0,0.45) 100%);
+}
+
+/* White text on image background */
+[data-layout="P03"] .text-section .h-hero,
+[data-layout="P03"] .text-section .h-xl,
+[data-layout="P03"] .text-section .h-md { color: #ffffff; }
+[data-layout="P03"] .text-section .lead { color: rgba(255,255,255,0.82); }
+[data-layout="P03"] .text-section .meta  { color: rgba(255,255,255,0.72); }
+
+/* ── P03 Global overlay mask ── */
+[data-layout="P03"] .overlay-mask {
+  background:
+    linear-gradient(
+      to right,
+      rgba(0,0,0, calc(var(--overlay-opacity) - 0.12)) 0%,
+      rgba(0,0,0, calc(var(--overlay-opacity))) 45%,
+      rgba(0,0,0, calc(var(--overlay-opacity) + 0.10)) 100%
+    );
+}
+
+/* Face-left  → text on right (default, reinforced) */
+[data-face-side="left"][data-layout="P03"] .text-section {
+  right: 0; left: auto;
+  background:
+    linear-gradient(to left, transparent 0%, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.50) 100%);
+}
+[data-face-side="left"][data-layout="P03"] .overlay-mask {
+  background:
+    linear-gradient(
+      to right,
+      rgba(0,0,0, calc(var(--overlay-opacity) + 0.10)) 0%,
+      rgba(0,0,0, calc(var(--overlay-opacity))) 55%,
+      rgba(0,0,0, calc(var(--overlay-opacity) - 0.12)) 100%
+    );
+}
+
+/* Face-right → text on left */
+[data-face-side="right"][data-layout="P03"] .text-section {
+  left: 0; right: auto;
+  background:
+    linear-gradient(to right, transparent 0%, rgba(0,0,0,0.05) 30%, rgba(0,0,0,0.50) 100%);
+}
+[data-face-side="right"][data-layout="P03"] .overlay-mask {
+  background:
+    linear-gradient(
+      to right,
+      rgba(0,0,0, calc(var(--overlay-opacity) - 0.12)) 0%,
+      rgba(0,0,0, calc(var(--overlay-opacity))) 45%,
+      rgba(0,0,0, calc(var(--overlay-opacity) + 0.10)) 100%
+    );
+}
+
+/* ============================================================
+   P04 — TOP PORTRAIT (人像在上 · 文字在下)
+   ============================================================ */
+[data-layout="P04"] .canvas {
+  flex-direction: column;
+}
+[data-layout="P04"] .portrait-section {
+  position: relative;
+  width: 100%;
+  height: 35%;
+}
+[data-layout="P04"] .text-section {
+  width: 100%;
+  height: 65%;
+  justify-content: center;
+}
+
+/* ============================================================
+   P05 — COLLAGE PORTRAIT (拼贴人像 · 2-4 张)
+
+   Grid controlled by data-collage="2"|"3"|"4" on .portrait-collage.
+   Each .portrait-tile gets its own background-image via inline style.
+   ============================================================ */
+[data-layout="P05"] .canvas {
+  flex-direction: column;
+}
+[data-layout="P05"] .portrait-section {
+  position: relative;
+  width: 100%; height: 42%;
+}
+[data-layout="P05"] .text-section {
+  width: 100%; height: 58%;
+  justify-content: center;
+}
+
+/* 2 tiles */
+[data-collage="2"] .portrait-collage {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+/* 3 tiles — two on top row, third spans full bottom row */
+[data-collage="3"] .portrait-collage {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+[data-collage="3"] .portrait-tile:nth-child(3) {
+  grid-column: 1 / -1;
+}
+/* 4 tiles — 2×2 grid */
+[data-collage="4"] .portrait-collage {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+/* ============================================================
+   P06 — MINIMAL PORTRAIT (极简人像 · 文字主导)
+
+   Portrait is a small accent shape (circle or rounded rect).
+   Position defaults to bottom-right corner.
+   Shape switchable via data-portrait-shape="circle"|"rounded".
+   ============================================================ */
+[data-layout="P06"] .canvas {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+[data-layout="P06"] .portrait-section {
+  position: absolute;
+  right: 80px; bottom: 80px;
+  width: var(--accent-portrait-size);
+  height: var(--accent-portrait-size);
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+}
+[data-layout="P06"] .text-section {
+  width: 100%; height: 100%;
+  justify-content: center;
+  padding: 100px 120px;
+}
+[data-layout="P06"] .text-section .h-hero {
+  font-size: clamp(140px, 16vw, 220px);
+}
+[data-layout="P06"] .text-section .lead {
+  max-width: 28ch;
+}
+
+/* Rounded-rect variant (Instagram-style avatar) */
+[data-portrait-shape="rounded"][data-layout="P06"] .portrait-section {
+  border-radius: 24px;
+}
+
+/* Top-left accent variant */
+[data-portrait-position="top-left"][data-layout="P06"] .portrait-section {
+  right: auto; bottom: auto;
+  left: 80px; top: 80px;
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+/* ── Text shadow helpers for image overlays ── */
+.text-shadow-soft {
+  text-shadow:
+    0 2px 12px rgba(0,0,0,0.55),
+    0 4px 28px rgba(0,0,0,0.35);
+}
+.text-shadow-hard {
+  text-shadow:
+    0 1px 4px rgba(0,0,0,0.85),
+    0 2px 16px rgba(0,0,0,0.6),
+    0 4px 32px rgba(0,0,0,0.4);
+}
+
+/* ── On-image text color override ── */
+.on-image       { color: #ffffff !important; }
+.on-image.lead  { color: rgba(255,255,255,0.85) !important; }
+.on-image.meta  { color: rgba(255,255,255,0.75) !important; }
+
+/* ── Spacing modifiers ── */
+.mt-sm { margin-top: 12px; }
+.mt-md { margin-top: 28px; }
+.mt-lg { margin-top: 48px; }
+.mb-sm { margin-bottom: 12px; }
+.mb-md { margin-bottom: 28px; }
+.mb-lg { margin-bottom: 48px; }
+
+/* ── Typography modifiers ── */
+.text-center { text-align: center; }
+.text-right  { text-align: right; }
+.accent-text { color: var(--accent); }
+
+/* ── Edge-to-edge text (no padding) ── */
+.text-full .text-section { padding: 0; }
+
+/* ============================================================
+   RENDER MODE HINTS (applied by render engine)
+
+   .render-exact   → canvas at native px size, no scaling
+   .render-preview → canvas scaled to fit viewport
+   ============================================================ */
+.render-exact .canvas   { transform: none; }
+.render-preview .canvas {
+  transform-origin: top center;
+  transform: scale(var(--preview-scale, 0.5));
+}
+
+/* ============================================================
+   PORTRAIT PLACEHOLDER (grid pattern for empty image areas)
+   ============================================================ */
+.portrait-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      var(--glow) 10px,
+      var(--glow) 11px
+    );
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
+}
+
+/* ── Collage tile divider accent ── */
+.portrait-tile::after {
+  content: '';
+  position: absolute; inset: 0;
+  border: 2px solid var(--border);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.portrait-tile:hover::after { opacity: 1; }
+
+/* ============================================================
+   PRINT / EXPORT
+   ============================================================ */
+@media print {
+  html, body { background: none; }
+  .canvas { break-inside: avoid; page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SEED DEMO — P01 Left Portrait · Dark theme · XHS poster
+
+     To switch layouts:  change data-layout  to P02–P06
+     To switch themes:   change data-theme   to light | dark | custom
+     To switch poster:   change .poster class to xhs | square | wide | custom
+     To set portrait:    set background-image inline style on .portrait-section
+     To inject face data: set --face-x / --face-y / --face-w / --face-h on :root
+     ============================================================ -->
+<div class="canvas poster xhs" data-layout="P01" data-theme="dark">
+
+  <!-- === PORTRAIT IMAGE AREA ===
+       Replace the SVG placeholder data-URI with the user's actual photo.
+       Example: style="background-image: url('user-portrait.jpg');"
+       The SVG below renders a simple human silhouette placeholder. -->
+  <div class="portrait-section"
+       style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 600%22><rect fill=%22%23222222%22 width=%22400%22 height=%22600%22/><circle cx=%22200%22 cy=%22230%22 r=%2280%22 fill=%22%23333333%22/><ellipse cx=%22200%22 cy=%22420%22 rx=%2290%22 ry=%22120%22 fill=%22%23333333%22/><text x=%22200%22 y=%22570%22 text-anchor=%22middle%22 fill=%22%23555555%22 font-family=%22monospace%22 font-size=%2213%22>PORTRAIT</text></svg>');">
+  </div>
+
+  <!-- === TEXT CONTENT AREA ===
+       Customize .h-hero, .lead, .meta content per design.
+       Use .spacer for flexible vertical gaps.
+       Use .accent-tag and .accent-bar for visual structure. -->
+  <div class="text-section">
+    <span class="accent-tag">ISSUE 01</span>
+    <div class="spacer" style="flex: 0 0 40px;"></div>
+
+    <h1 class="h-hero">探索<br>未知</h1>
+    <div class="accent-bar"></div>
+    <p class="lead">在光影交错中寻找属于你的独特表达方式</p>
+
+    <div class="spacer"></div>
+    <p class="meta">By Your Name &nbsp;/&nbsp; 2026</p>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     LAYOUT REFERENCE (uncomment to preview other modes)
+
+     P01 — Left Portrait, Dark
+     ─────────────────────────────
+     <div class="canvas poster xhs" data-layout="P01" data-theme="dark">
+       <div class="portrait-section" style="background-image: url(...);"></div>
+       <div class="text-section">...</div>
+     </div>
+
+     P02 — Right Portrait, Light
+     ─────────────────────────────
+     <div class="canvas poster xhs" data-layout="P02" data-theme="light">
+       <div class="portrait-section" style="background-image: url(...);"></div>
+       <div class="text-section">...</div>
+     </div>
+
+     P03 — Background Portrait (face-aware)
+     ───────────────────────────────────────
+     <div class="canvas poster xhs" data-layout="P03" data-theme="dark"
+          data-face-side="left">
+       <div class="portrait-section" style="background-image: url(...);">
+         <div class="overlay-mask"></div>
+       </div>
+       <div class="text-section">...</div>
+     </div>
+
+     P04 — Top Portrait
+     ──────────────────
+     <div class="canvas poster xhs" data-layout="P04" data-theme="dark">
+       <div class="portrait-section" style="background-image: url(...);"></div>
+       <div class="text-section">...</div>
+     </div>
+
+     P05 — Collage Portrait (3-tile example)
+     ────────────────────────────────────────
+     <div class="canvas poster xhs" data-layout="P05" data-theme="dark">
+       <div class="portrait-section">
+         <div class="portrait-collage" data-collage="3">
+           <div class="portrait-tile" style="background-image: url(...);"></div>
+           <div class="portrait-tile" style="background-image: url(...);"></div>
+           <div class="portrait-tile" style="background-image: url(...);"></div>
+         </div>
+       </div>
+       <div class="text-section">...</div>
+     </div>
+
+     P06 — Minimal Portrait (circle accent)
+     ───────────────────────────────────────
+     <div class="canvas poster xhs" data-layout="P06" data-theme="dark"
+          data-portrait-shape="circle">
+       <div class="portrait-section" style="background-image: url(...);"></div>
+       <div class="text-section">...</div>
+     </div>
+     ============================================================ -->
+
+</body>
+</html>

@@ -1,0 +1,924 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="ink-classic">
+<head>
+  <meta charset="utf-8">
+  <title>[必填] 替换为封面标题 · NBDE Cover Design</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    /* =========================================================
+       Editorial Magazine × E-ink — NBDE Cover Design Seed
+       ---------------------------------------------------------
+       Four board sizes in one HTML:
+         .poster.xhs      1080×1440  (3:4   小红书)
+         .poster.square   1080×1080  (1:1   微信方封面)
+         .poster.wide     2100× 900  (21:9  微信主封面)
+         .poster.custom   CSS变量驱动  (任意比例)
+
+       Theme switching via <html data-theme="…">:
+         ink-classic | indigo-porcelain | forest-ink
+         kraft-paper | dune | midnight-ink | custom
+
+       Fill posters where marked <!-- POSTERS_HERE -->.
+       Each poster carries one Layout Recipe.
+       ========================================================= */
+
+    /* =========================================================
+       SECTION 1 — Theme tokens (7 themes total)
+       ---------------------------------------------------------
+       6 preset palettes + 1 fully user-configurable custom
+       theme driven by CSS custom properties on :root / <html>.
+       ========================================================= */
+
+    /* 1a — Default / ink-classic: business commentary, AI essays,
+       product thinking, neutral editorial posts */
+    :root,
+    [data-theme="ink-classic"] {
+      --paper:      #f3f0e8;
+      --paper-2:    #ebe6da;
+      --ink:        #0a0a0b;
+      --muted:      #68625a;
+      --line:       rgba(10,10,11,.22);
+      --accent:     #111111;
+      --accent-soft:#d8d2c6;
+      --ink-rgb:    10,10,11;
+      --paper-rgb:  243,240,232;
+      --accent-rgb: 17,17,17;
+    }
+
+    /* 1b — Indigo Porcelain: technology, research, data, AI
+       infrastructure, calm analytical writing */
+    [data-theme="indigo-porcelain"] {
+      --paper:      #f2f4f5;
+      --paper-2:    #e5ebef;
+      --ink:        #0a1f3d;
+      --muted:      #5f6d78;
+      --line:       rgba(10,31,61,.20);
+      --accent:     #315d93;
+      --accent-soft:#d7e1ec;
+      --ink-rgb:    10,31,61;
+      --paper-rgb:  242,244,245;
+      --accent-rgb: 49,93,147;
+    }
+
+    /* 1c — Forest Ink: hiking, outdoor, nature, sustainability,
+       personal field notes, grounded lifestyle posts */
+    [data-theme="forest-ink"] {
+      --paper:      #f5f1e8;
+      --paper-2:    #e8dfcf;
+      --ink:        #16251b;
+      --muted:      #5d665d;
+      --line:       rgba(22,37,27,.22);
+      --accent:     #2e6b4f;
+      --accent-soft:#d4dfd2;
+      --ink-rgb:    22,37,27;
+      --paper-rgb:  245,241,232;
+      --accent-rgb: 46,107,79;
+    }
+
+    /* 1d — Kraft Paper: memory, craft, personal essays, old
+       objects, creator notes, warm low-tech topics */
+    [data-theme="kraft-paper"] {
+      --paper:      #eedfc7;
+      --paper-2:    #dfc9a8;
+      --ink:        #2a1e13;
+      --muted:      #755f49;
+      --line:       rgba(42,30,19,.24);
+      --accent:     #9b5a2e;
+      --accent-soft:#d5b58f;
+      --ink-rgb:    42,30,19;
+      --paper-rgb:  238,223,199;
+      --accent-rgb: 155,90,46;
+    }
+
+    /* 1e — Dune: design, object studies, portfolio-like covers,
+       gallery tone, restrained aesthetic posts */
+    [data-theme="dune"] {
+      --paper:      #f0e6d2;
+      --paper-2:    #ded0b7;
+      --ink:        #1f1a14;
+      --muted:      #6f6557;
+      --line:       rgba(31,26,20,.22);
+      --accent:     #8f7650;
+      --accent-soft:#d4c2a4;
+      --ink-rgb:    31,26,20;
+      --paper-rgb:  240,230,210;
+      --accent-rgb: 143,118,80;
+    }
+
+    /* 1f — Midnight Ink: the ONLY official dark Editorial palette.
+       Reserved for game key art, night scenes, dark photography,
+       cinematic covers. Do not improvise other dark backgrounds. */
+    [data-theme="midnight-ink"] {
+      --paper:      #0e0d0c;
+      --paper-2:    #1a1714;
+      --ink:        #ece2cf;
+      --muted:      #9a8c75;
+      --line:       rgba(236,226,207,.22);
+      --accent:     #d4a04a;
+      --accent-soft:#3a2a14;
+      --ink-rgb:    236,226,207;
+      --paper-rgb:  14,13,12;
+      --accent-rgb: 212,160,74;
+    }
+
+    /* 1g — Custom: reads ALL colors from CSS variables set on
+       :root or <html>. Users can set any combination of
+       --user-paper, --user-ink, --user-accent, etc. to define
+       a fully custom palette without editing the theme block.
+       Fallback values match ink-classic for safety. */
+    [data-theme="custom"] {
+      --paper:       var(--user-paper, #f3f0e8);
+      --paper-2:     var(--user-paper-2, #ebe6da);
+      --ink:         var(--user-ink, #0a0a0b);
+      --muted:       var(--user-muted, #68625a);
+      --line:        var(--user-line, rgba(10,10,11,.22));
+      --accent:      var(--user-accent, #111111);
+      --accent-soft: var(--user-accent-soft, #d8d2c6);
+      --ink-rgb:     var(--user-ink-rgb, 10,10,11);
+      --paper-rgb:   var(--user-paper-rgb, 243,240,232);
+      --accent-rgb:  var(--user-accent-rgb, 17,17,17);
+    }
+
+
+    /* =========================================================
+       SECTION 2 — Typography stack
+       ---------------------------------------------------------
+       Serif-zh for display/body (magazine feel), mono for
+       kicker/meta/labels (editorial discipline), sans fallback
+       for generic UI contexts.
+       ========================================================= */
+    :root {
+      --serif-zh: "Noto Serif SC", "Songti SC", "STSong", serif;
+      --serif-en: "Playfair Display", "Noto Serif SC", serif;
+      --sans-zh:  "Noto Sans SC", -apple-system, "PingFang SC", "Microsoft YaHei UI", sans-serif;
+      --sans-en:  "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      --mono:     "IBM Plex Mono", ui-monospace, "SF Mono", Consolas, monospace;
+    }
+
+
+    /* =========================================================
+       SECTION 3 — Reset & sheet
+       ========================================================= */
+    *,*::before,*::after { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: #1a1a1a;
+      font-family: var(--sans-zh);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 64px 32px;
+    }
+    .sheet {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 48px;
+    }
+
+
+    /* =========================================================
+       SECTION 4 — Poster boards
+       ---------------------------------------------------------
+       Three fixed export sizes (xhs, square, wide) plus one
+       fully custom size driven by --canvas-w / --canvas-h.
+       Minimums enforce a usable preview even at tiny values.
+       ========================================================= */
+    .poster {
+      position: relative;
+      background: var(--paper);
+      color: var(--ink);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    /* Fixed sizes — exact pixel match for export */
+    .poster.xhs    { width: 1080px; height: 1440px; }
+    .poster.square { width: 1080px; height: 1080px; }
+    .poster.wide   { width: 2100px; height:  900px; }
+
+    /* Custom size — reads from CSS variables, allowing any canvas
+       dimensions. Minimums prevent collapse at tiny values and
+       ensure the poster remains a visible rectangle. */
+    .poster.custom {
+      width: var(--canvas-w, 1080px);
+      height: var(--canvas-h, 1080px);
+      min-width: 400px;
+      min-height: 400px;
+    }
+
+    .poster figure { margin: 0; }
+
+    /* Content padding varies by board to maintain consistent
+       margins regardless of canvas size */
+    .poster.xhs    .content,
+    .poster.custom .content,
+    .poster.square .content { padding: 88px 88px; }
+    .poster.wide   .content { padding: 88px 120px; }
+    .content { position: relative; width: 100%; height: 100%; z-index: 2; }
+
+
+    /* =========================================================
+       SECTION 5 — Background layers
+       ---------------------------------------------------------
+       Multi-layer atmosphere: WebGL canvas base → grain texture
+       → paper-wash vignette. Midnight Ink overrides flip all
+       three to match the dark palette (screen-mode grain, gilt
+       + shadow vignette, dark frame-img border).
+       ========================================================= */
+
+    /* 5a — WebGL canvas (magazine-bg mounts here) */
+    .mag-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* 5b — Procedural grain overlay. Multiply on light paper,
+       screen on dark (see Midnight Ink override below). */
+    .grain {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      opacity: .35;
+      mix-blend-mode: multiply;
+      background-image: radial-gradient(rgba(0,0,0,.045) 1px, transparent 1px);
+      background-size: 3px 3px;
+    }
+
+    /* 5c — Paper wash: subtle vertical toning + ink absorption
+       gradient. Creates the "printed page" feel. */
+    .paper-wash {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg,
+          rgba(var(--ink-rgb),.02),
+          rgba(var(--ink-rgb),.05) 60%,
+          rgba(var(--ink-rgb),.08));
+    }
+
+    /* 5d — Midnight Ink overrides: flip grain to screen-mode
+       warm specks, replace paper-wash with gilt+shadow vignette,
+       darken frame-img backgrounds. Light-paper math doesn't
+       carry over — these must invert every assumption. */
+    [data-theme="midnight-ink"] .grain {
+      opacity: .26;
+      mix-blend-mode: screen;
+      background-image: radial-gradient(rgba(255,244,214,.10) 1px, transparent 1px);
+    }
+    [data-theme="midnight-ink"] .paper-wash {
+      background:
+        radial-gradient(80% 50% at 28% 16%, rgba(212,160,74,.12), transparent 64%),
+        radial-gradient(70% 60% at 80% 86%, rgba(60,40,20,.20), transparent 72%),
+        linear-gradient(180deg, rgba(236,226,207,.02), rgba(0,0,0,.32));
+    }
+    [data-theme="midnight-ink"] .frame-img {
+      background: #18120f;
+      box-shadow: 0 0 0 1px rgba(236,226,207,.10);
+    }
+
+
+    /* =========================================================
+       SECTION 6 — Typography roles
+       ---------------------------------------------------------
+       "The larger, the lighter" rule: display titles run at
+       weight 500 with positive tracking. Kicker/meta/label use
+       mono uppercase at wide tracking (.20-.22em). Body uses
+       serif-zh, not sans. Sizes are intentionally restrained
+       defaults — recipe authors should inline-tune font-size
+       for specific compositions.
+       ========================================================= */
+
+    /* 6a — Kicker: small mono overline, the editorial "section tag" */
+    .kicker {
+      font-family: var(--mono);
+      font-size: 21px;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: rgba(var(--ink-rgb), .55);
+      margin: 0 0 18px;
+    }
+
+    /* 6b — Display: main cover headline, serif, light weight */
+    .h-display {
+      font-family: var(--serif-zh);
+      font-weight: 500;
+      font-size: 124px;
+      line-height: 1.06;
+      letter-spacing: .04em;
+      margin: 0 0 24px;
+      color: var(--ink);
+    }
+
+    /* 6c — XL: secondary headline or page title */
+    .h-xl {
+      font-family: var(--serif-zh);
+      font-weight: 500;
+      font-size: 88px;
+      line-height: 1.10;
+      letter-spacing: .03em;
+      margin: 0 0 24px;
+      color: var(--ink);
+    }
+
+    /* 6d — Medium: section title, feature header */
+    .h-md {
+      font-family: var(--serif-zh);
+      font-weight: 500;
+      font-size: 56px;
+      line-height: 1.18;
+      letter-spacing: .02em;
+      margin: 0 0 18px;
+      color: var(--ink);
+    }
+
+    /* 6e — Subtitle: italic English serif, muted color */
+    .h-sub {
+      font-family: var(--serif-en);
+      font-style: italic;
+      font-weight: 400;
+      font-size: 36px;
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+
+    /* 6f — Lead: introductory paragraph, serif, slightly
+       transparent for layered depth */
+    .lead {
+      font-family: var(--serif-zh);
+      font-weight: 400;
+      font-size: 28px;
+      line-height: 1.55;
+      color: rgba(var(--ink-rgb), .82);
+      margin: 0 0 24px;
+    }
+
+    /* 6g — Body: running text, comfortable line-height */
+    .body {
+      font-family: var(--serif-zh);
+      font-weight: 400;
+      font-size: 24px;
+      line-height: 1.65;
+      color: rgba(var(--ink-rgb), .80);
+      margin: 0 0 18px;
+    }
+
+    /* 6h — Meta: mono metadata line, wide tracking */
+    .meta {
+      font-family: var(--mono);
+      font-size: 18px;
+      letter-spacing: .20em;
+      text-transform: uppercase;
+      color: rgba(var(--ink-rgb), .55);
+    }
+
+    /* 6i — Label: same as meta but as a standalone block */
+    .label {
+      font-family: var(--mono);
+      font-size: 18px;
+      letter-spacing: .20em;
+      text-transform: uppercase;
+      color: rgba(var(--ink-rgb), .55);
+    }
+
+    /* 6j — Pullquote: large italic serif, the editorial "voice" */
+    .pullquote {
+      font-family: var(--serif-zh);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 64px;
+      line-height: 1.28;
+      color: var(--ink);
+      margin: 0;
+    }
+
+
+    /* =========================================================
+       SECTION 6k — Typography size adjustments per board
+       ---------------------------------------------------------
+       Square boards have less vertical room → tighten scales.
+       Wide boards have horizontal dominance → enlarge display
+       and lead. Custom boards default to xhs scales.
+       ========================================================= */
+
+    /* Square (1:1) — compress the largest sizes */
+    .poster.square .h-display { font-size: 116px; }
+    .poster.square .h-xl      { font-size: 78px; }
+    .poster.square .h-md      { font-size: 48px; }
+    .poster.square .lead      { font-size: 28px; }
+    .poster.square .body      { font-size: 26px; }
+
+    /* Wide (21:9) — expand display and lead for horizontal
+       layout; keep body restrained */
+    .poster.wide .h-display   { font-size: 128px; }
+    .poster.wide .h-xl        { font-size: 96px; }
+    .poster.wide .lead        { font-size: 34px; }
+
+    /* Custom boards inherit the base xhs scale — override
+       via inline styles or additional .poster.custom rules */
+
+
+    /* =========================================================
+       SECTION 7 — Issue label + page metadata
+       ---------------------------------------------------------
+       .issue-row: inline vol/date marker at top
+       .issue-strip: footer strip with publication metadata
+       ========================================================= */
+
+    /* 7a — Issue row: vol · date marker, mono uppercase */
+    .issue-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-family: var(--mono);
+      font-size: 20px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .issue-row .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* 7b — Issue strip: absolute footer with ruled top border.
+       Positions auto-adjust per board size. */
+    .issue-strip {
+      position: absolute;
+      left: 88px;
+      right: 88px;
+      bottom: 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 32px;
+      font-family: var(--mono);
+      font-size: 18px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+    }
+    .poster.wide .issue-strip { left: 120px; right: 120px; }
+    .poster.custom .issue-strip { left: 88px; right: 88px; }
+    .issue-strip span { white-space: nowrap; }
+
+
+    /* =========================================================
+       SECTION 8 — Layout primitives
+       ---------------------------------------------------------
+       Atomic layout utilities: flex stacks, grid columns,
+       centering helpers, ruled dividers. Composable, no
+       side effects — safe to nest anywhere.
+       ========================================================= */
+
+    /* Flex stack: vertical column with optional gap */
+    .stack    { display: flex; flex-direction: column; }
+    .gap-1    { gap: 12px; }
+    .gap-2    { gap: 24px; }
+    .gap-3    { gap: 36px; }
+    .gap-4    { gap: 48px; }
+    .gap-5    { gap: 64px; }
+
+    /* Flex row: horizontal alignment */
+    .row      { display: flex; flex-direction: row; }
+
+    /* Grid columns: equal-width columns for side-by-side content */
+    .col-2    { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+    .col-3    { display: grid; grid-template-columns: repeat(3, 1fr); gap: 36px; }
+
+    /* Center helper: text-align centering */
+    .center   { text-align: center; }
+
+    /* Grow: fill remaining space in a flex container */
+    .grow     { flex: 1; }
+
+    /* Pad Y: vertical padding utility */
+    .pad-y-md { padding-top: 36px; padding-bottom: 36px; }
+
+    /* Rule: hairline divider using --line color */
+    .rule     { height: 1px; background: var(--line); border: 0; margin: 24px 0; }
+
+    /* Rule accent: thicker accent-colored divider, fixed width */
+    .rule-accent { height: 2px; background: var(--accent); border: 0; margin: 24px 0; width: 96px; }
+
+
+    /* =========================================================
+       SECTION 9 — Image containers
+       ---------------------------------------------------------
+       .frame-img: standard framed image with ratio classes
+       .frame-shot: screenshot-optimized container with
+         corners, shadow, inset, and background tone variants
+       ========================================================= */
+
+    /* 9a — Frame image: crop container with paper-2 placeholder */
+    .frame-img {
+      position: relative;
+      overflow: hidden;
+      background: var(--paper-2);
+      display: block;
+      margin: 0;
+    }
+    .frame-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 50%;
+      display: block;
+    }
+    .frame-img.fit-contain img { object-fit: contain; }
+
+    /* Aspect ratio classes — shared by both .frame-img and
+       .frame-shot for layout consistency */
+    .frame-img.r-3x4,
+    .frame-shot.r-3x4   { aspect-ratio: 3 / 4; }
+    .frame-img.r-1x1,
+    .frame-shot.r-1x1   { aspect-ratio: 1 / 1; }
+    .frame-img.r-4x3,
+    .frame-shot.r-4x3   { aspect-ratio: 4 / 3; }
+    .frame-img.r-16x9,
+    .frame-shot.r-16x9  { aspect-ratio: 16 / 9; }
+    .frame-img.r-16x10,
+    .frame-shot.r-16x10 { aspect-ratio: 16 / 10; }
+    .frame-img.r-21x9,
+    .frame-shot.r-21x9  { aspect-ratio: 21 / 9; }
+    .frame-img.r-3x2,
+    .frame-shot.r-3x2   { aspect-ratio: 3 / 2; }
+
+    /* Image caption: mono uppercase, sits below a .frame-img */
+    .img-cap {
+      font-family: var(--mono);
+      font-size: 20px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+
+
+    /* =========================================================
+       SECTION 9b — Screenshot treatment (.frame-shot)
+       ---------------------------------------------------------
+       Optimized container for UI screenshots / web captures /
+       code shots. Replace .frame-img when you need:
+       - Rounded corners
+       - Soft shadow
+       - Padded inset
+       - Device chrome (browser / phone)
+       Stack: .frame-shot.r-{ratio}.bg-{tone}.inset-{variant}
+       ========================================================= */
+    .frame-shot {
+      position: relative;
+      overflow: hidden;
+      display: block;
+      margin: 0;
+      background: var(--paper-2);
+      border-radius: 6px;
+    }
+
+    /* Corner radius variants */
+    .frame-shot.corners-sq { border-radius: 0; }
+    .frame-shot.corners-sm { border-radius: 6px; }
+    .frame-shot.corners-md { border-radius: 14px; }
+
+    /* Shadow variants — warm low-contrast drop shadows */
+    .frame-shot.shadow-soft { box-shadow: 0 18px 36px -18px rgba(20,18,14,.22), 0 2px 6px rgba(20,18,14,.06); }
+    .frame-shot.shadow-ed   { box-shadow: 0 28px 60px -24px rgba(20,18,14,.32), 0 6px 14px rgba(20,18,14,.08); }
+
+    /* Background tone variants — programmatic, no asset deps */
+    .frame-shot.bg-paper    { background: var(--paper); }
+    .frame-shot.bg-paper-2  { background: var(--paper-2); }
+    .frame-shot.bg-ink      { background: var(--ink); }
+    .frame-shot.bg-grid     {
+      background:
+        linear-gradient(var(--paper-2), var(--paper-2)),
+        repeating-linear-gradient(0deg, var(--line) 0 1px, transparent 1px 48px),
+        repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 48px);
+      background-blend-mode: multiply;
+    }
+    .frame-shot.bg-dot {
+      background-color: var(--paper-2);
+      background-image: radial-gradient(var(--line) 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+
+    /* Inset padding — content floats on the bg tone */
+    .frame-shot.inset-none > img,
+    .frame-shot.inset-none > .shot-body { padding: 0; }
+    .frame-shot.inset-sub  { padding: 24px; }
+    .frame-shot.inset-bal  { padding: 56px; }
+
+    /* Inner img defaults to contain (screenshots must not crop UI) */
+    .frame-shot > img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      border-radius: inherit;
+    }
+    .frame-shot.fit-cover > img { object-fit: cover; }
+
+
+    /* =========================================================
+       SECTION 10 — Editorial components
+       ---------------------------------------------------------
+       Callout, ledger, marginalia, pipeline, before/after —
+       the structured building blocks of magazine layout.
+       ========================================================= */
+
+    /* 10a — Callout: left-accented block with italic body and
+       optional source attribution */
+    .callout {
+      border-left: 3px solid var(--accent);
+      padding: 18px 28px;
+      font-family: var(--serif-zh);
+      font-style: italic;
+      font-size: 36px;
+      line-height: 1.35;
+      color: var(--ink);
+      background: var(--paper-2);
+    }
+    .callout .callout-src {
+      display: block;
+      margin-top: 18px;
+      font-style: normal;
+      font-family: var(--mono);
+      font-size: 20px;
+      letter-spacing: .12em;
+      color: var(--muted);
+    }
+
+    /* 10b — Ledger: numbered list with title + note rows.
+       Each .ledger-row has a number, title, and optional note. */
+    .ledger { display: flex; flex-direction: column; }
+    .ledger-row {
+      display: grid;
+      grid-template-columns: 96px 1fr auto;
+      gap: 24px;
+      align-items: baseline;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .ledger-row .ledger-nb {
+      font-family: var(--mono);
+      font-size: 28px;
+      color: var(--accent);
+      letter-spacing: .08em;
+    }
+    .ledger-row .ledger-title {
+      font-family: var(--serif-zh);
+      font-weight: 500;
+      font-size: 42px;
+      letter-spacing: .02em;
+      color: var(--ink);
+    }
+    .ledger-row .ledger-note {
+      font-family: var(--serif-zh);
+      font-weight: 400;
+      font-size: 22px;
+      line-height: 1.55;
+      color: rgba(var(--ink-rgb), .72);
+    }
+
+    /* 10c — Marginalia: main column + narrow sidebar with
+       ruled left border for notes / references / asides */
+    .marginalia {
+      display: grid;
+      grid-template-columns: 1fr 220px;
+      gap: 48px;
+    }
+    .marginalia .mg-col {
+      border-left: 1px solid var(--line);
+      padding-left: 24px;
+    }
+    .marginalia .mg-col p {
+      font-family: var(--mono);
+      font-size: 20px;
+      letter-spacing: .04em;
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    /* 10d — Pipeline (vertical): numbered step sequence.
+       Each step has a number, title, and description. */
+    .pipeline-v { display: flex; flex-direction: column; gap: 28px; }
+    .pipeline-v .step {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 28px;
+      align-items: baseline;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .pipeline-v .step:last-child { border-bottom: 0; }
+    .pipeline-v .step-nb {
+      font-family: var(--mono);
+      font-size: 32px;
+      color: var(--accent);
+    }
+    .pipeline-v .step-title {
+      font-family: var(--serif-zh);
+      font-weight: 500;
+      font-size: 40px;
+      letter-spacing: .02em;
+      margin: 0 0 8px;
+    }
+    .pipeline-v .step-desc {
+      font-family: var(--serif-zh);
+      font-weight: 400;
+      font-size: 24px;
+      line-height: 1.6;
+      color: rgba(var(--ink-rgb), .72);
+      margin: 0;
+    }
+
+    /* 10e — Before/After: stacked comparison blocks.
+       Top block is the "before" (reduced opacity), bottom is
+       the "after" (full opacity, accented left border). */
+    .beforeafter {
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      gap: 32px;
+      height: 100%;
+    }
+    .beforeafter .ba-block {
+      padding: 32px;
+      background: var(--paper-2);
+      border-left: 3px solid var(--accent);
+    }
+    .beforeafter .ba-block.before { opacity: .68; }
+
+
+    /* =========================================================
+       SECTION 11 — Per-poster corner mounting helpers
+       ---------------------------------------------------------
+       Absolute-positioned corner labels for issue numbers,
+       page markers, or branding. Positions adjusted per board
+       size to maintain consistent margins.
+       ========================================================= */
+    .poster .corner-tl,
+    .poster .corner-tr,
+    .poster .corner-bl,
+    .poster .corner-br {
+      position: absolute;
+      font-family: var(--mono);
+      font-size: 18px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      z-index: 3;
+    }
+    .poster.xhs .corner-tl,
+    .poster.square .corner-tl,
+    .poster.custom .corner-tl { left: 88px; top: 56px; }
+    .poster.xhs .corner-tr,
+    .poster.square .corner-tr,
+    .poster.custom .corner-tr { right: 88px; top: 56px; }
+    .poster.xhs .corner-bl,
+    .poster.square .corner-bl,
+    .poster.custom .corner-bl { left: 88px; bottom: 56px; }
+    .poster.xhs .corner-br,
+    .poster.square .corner-br,
+    .poster.custom .corner-br { right: 88px; bottom: 56px; }
+    .poster.wide .corner-tl { left: 120px; top: 56px; }
+    .poster.wide .corner-tr { right: 120px; top: 56px; }
+    .poster.wide .corner-bl { left: 120px; bottom: 56px; }
+    .poster.wide .corner-br { right: 120px; bottom: 56px; }
+  </style>
+</head>
+<body>
+  <!-- THEME SWITCHING
+       Change <html data-theme="…"> above to any of:
+       ink-classic | indigo-porcelain | forest-ink
+       kraft-paper | dune | midnight-ink | custom
+       
+       For custom theme, also define CSS variables on :root
+       or <html>, e.g.:
+       
+       <html data-theme="custom" style="
+         --user-paper: #faf5e8;
+         --user-ink: #1a0f07;
+         --user-accent: #c0392b;
+         --user-accent-soft: #f0d5c8;
+         --user-paper-2: #efe0cc;
+         --user-muted: #8c7865;
+         --user-line: rgba(26,15,7,.20);
+         --user-ink-rgb: 26,15,7;
+         --user-paper-rgb: 250,245,232;
+         --user-accent-rgb: 192,57,43;
+       ">
+       
+       For custom board size:
+       <section class="poster custom" style="
+         --canvas-w: 1200px;
+         --canvas-h: 1600px;
+       ">…</section>
+  -->
+  <main class="sheet">
+
+    <!-- POSTERS_HERE -->
+    <!-- ============================================================
+         Replace the placeholder below with real cover content.
+         Available board sizes:
+           
+           <section class="poster xhs"    id="xhs-01">…</section>
+           <section class="poster square" id="wechat-1x1">…</section>
+           <section class="poster wide"   id="wechat-21x9">…</section>
+           <section class="poster custom" id="custom-01" style="--canvas-w:1080px;--canvas-h:1080px">…</section>
+         
+         Each poster needs at minimum:
+         - <canvas class="mag-bg" data-bg="ink-flow"></canvas>
+         - <div class="grain"></div>
+         - <div class="content">…</div>
+         
+         Optionally add:
+         - <div class="paper-wash"></div>  (between grain and content)
+         - <div class="issue-strip">…</div>  (absolute footer)
+         - .corner-tl/.corner-tr/.corner-bl/.corner-br  (corner markers)
+         ============================================================ -->
+
+    <!-- Placeholder: Magazine Issue Cover (3:4 · xhs) -->
+    <section class="poster xhs" id="xhs-01">
+      <canvas class="mag-bg" data-bg="ink-flow"></canvas>
+      <div class="grain"></div>
+      <div class="content stack gap-4">
+        <div class="issue-row">
+          <span>Vol. 01</span><span class="dot"></span><span>2026.05</span>
+        </div>
+        <div class="stack gap-2">
+          <p class="kicker">封面 · Cover</p>
+          <h1 class="h-display">[标题占位]<br>替换为真实文案</h1>
+          <p class="h-sub">A working subtitle</p>
+        </div>
+        <figure class="frame-img r-16x10">
+          <img src="assets/cover.jpg" alt="cover image placeholder">
+        </figure>
+        <p class="lead">用一段克制的引语解释为什么这一组卡片值得读完。</p>
+      </div>
+      <div class="issue-strip">
+        <span>Issue · Magazine</span>
+        <span>—</span>
+        <span>by [作者]</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Magazine WebGL background (deterministic ink-flow canvas).
+       Script path is relative to the HTML file location in assets/templates/;
+       the actual script lives in assets/magazine-bg-webgl.js. -->
+  <script src="../magazine-bg-webgl.js"></script>
+  <script>
+    (function () {
+      /* Read a CSS custom property with 3 comma-separated integers
+         (e.g. "10,10,11") and return as [r,g,b] array.
+         Falls back to the provided default if the property is empty
+         or unparseable. */
+      function cssVarRgb(name, fallback) {
+        var raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        if (!raw) return fallback;
+        var parts = raw.split(',').map(function (x) { return parseInt(x.trim(), 10); });
+        return parts.length === 3 && parts.every(function (n) { return !isNaN(n); }) ? parts : fallback;
+      }
+
+      /* Mount MagazineBg on every <canvas class="mag-bg">.
+         Pulls ink/paper/accent colors from theme tokens so the
+         WebGL render matches the active palette.
+         frozenTime fixes the noise seed for a deterministic,
+         reproducible still frame — critical for static exports. */
+      function mountAll() {
+        if (!window.MagazineBg || !window.MagazineBg.mount) return;
+        var ink    = cssVarRgb('--ink-rgb',    [10, 10, 11]);
+        var paper  = cssVarRgb('--paper-rgb',  [243, 240, 232]);
+        var accent = cssVarRgb('--accent-rgb', [17, 17, 17]);
+        document.querySelectorAll('canvas.mag-bg').forEach(function (c) {
+          window.MagazineBg.mount(c, {
+            ink: ink,
+            paper: paper,
+            accent: accent,
+            strength: 0.32,
+            frozenTime: 12.5
+          });
+        });
+      }
+
+      if (document.readyState === 'complete') mountAll();
+      else window.addEventListener('load', mountAll);
+    })();
+  </script>
+</body>
+</html>
