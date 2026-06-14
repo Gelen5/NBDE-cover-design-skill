@@ -1,4 +1,4 @@
-# NBDE Cover Design Skill
+# 宇宙第一封面图生成 Skill
 
 > 一个 Skill 搞定：AI 生图 · 多平台封面 · 人像个性化封面
 > 支持自定义比例、自定义颜色，34 种版式，10 套预设主题
@@ -311,7 +311,7 @@ git clone https://github.com/Gelen5/NBDE-cover-design-skill.git
 在项目根目录创建 `.cursor/rules/nbde-cover.md`：
 
 ```markdown
-# NBDE Cover Design Skill
+# 宇宙第一封面图生成 Skill
 
 当用户请求生成封面、头图、AI 生图时，读取 `NBDE-cover-design-skill/SKILL.md` 并按工作流执行。
 
